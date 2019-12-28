@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     fs::File,
     io::{self, BufRead, BufReader},
     path::Path,
@@ -14,7 +13,7 @@ pub struct Config {
 #[derive(Debug)]
 pub struct DrumSetting {
     pub name: String,
-    pub settings: HashMap<char, char>,
+    pub settings: Vec<char>,
     pub rot_idx: char,
 }
 
@@ -35,7 +34,6 @@ impl Config {
         };
 
         let mut mode = ParserMode::Alphabet;
-        let mut real_line_count = 0;
         for line in buf.lines().filter_map(Result::ok) {
             if line.starts_with("#") || line.is_empty() {
                 continue;
@@ -59,9 +57,7 @@ impl Config {
                             .trim()
                             .chars()
                             .filter(|&c| c != ',')
-                            .enumerate()
-                            .map(|(idx, el)| (config.alphabet[idx], el))
-                            .collect::<HashMap<char, char>>();
+                            .collect::<Vec<char>>();
                         let rot = line[(rot_pos + 1)..].trim().chars().collect::<Vec<char>>()[0];
                         let drum_setting = DrumSetting {
                             name: line[0..name_len].to_string(),
@@ -76,9 +72,7 @@ impl Config {
                             .trim()
                             .chars()
                             .filter(|&c| c != ',')
-                            .enumerate()
-                            .map(|(idx, el)| (config.alphabet[idx], el))
-                            .collect::<HashMap<char, char>>();
+                            .collect::<Vec<char>>();
                         let drum_setting = DrumSetting {
                             name: line[0..name_len].to_string(),
                             settings: set,
@@ -88,7 +82,6 @@ impl Config {
                     }
                 }
             }
-            real_line_count += 1;
         }
         Ok(config)
     }
