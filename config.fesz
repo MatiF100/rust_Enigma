@@ -1,0 +1,24 @@
+#Lines starting with # will be ignored
+#1st Line contains NOT SHIFTED alphabet characters separated by comas;
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+
+#Other lines contain DRUM NAME followed by DRUM SETTINNGS separated by comas;
+
+#There are DRUMS
+#They provide machine with ASYMETRICAL PERMUTATIONS (A->B, B->C, C->A)
+#Can work in normal or REVERSED MODE (A->C, C->B, B->A)
+#After each line there is & followed by the rotation char
+
+~Drum Settings
+
+Drum 1,E,K,M,F,L,G,D,Q,V,Z,N,T,O,W,Y,H,X,U,S,P,A,I,B,R,C,J&R
+Drum 2,A,J,D,K,S,I,R,U,X,B,L,H,W,T,M,C,Q,G,Z,N,P,Y,F,V,O,E&F
+Drum 3,B,D,F,H,J,L,C,P,R,T,X,V,Z,N,Y,E,I,W,G,A,K,M,U,S,Q,O&W
+
+#There are REVERSING DRUMS
+#They provide machine with only symetrical permutations(A<=>B)
+
+~Rev Settings
+
+Rev 1,Y,R,U,H,Q,S,L,D,P,X,N,G,O,K,M,I,E,B,F,Z,C,W,V,J,A,T
+Rev 2,F,V,P,J,I,A,O,Y,E,D,R,Z,X,W,G,C,T,K,U,Q,S,B,N,M,H,L
