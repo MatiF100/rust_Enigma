@@ -1,7 +1,7 @@
 use config::Config;
 use std::collections::HashMap;
 
-mod config;
+pub mod config;
 
 mod tests {
     use super::*;
@@ -34,13 +34,14 @@ mod tests {
 
 type Drum = (Vec<char>, char, i32);
 
-struct Enigma {
+#[derive(Debug)]
+pub struct Enigma {
     config: Config,
     substitutions: Vec<char>,
 }
 
 impl Enigma {
-    fn new(config: Config) -> Self {
+    pub fn new(config: Config) -> Self {
         let substitutions = config.alphabet.clone();
 
         Enigma {
@@ -49,20 +50,20 @@ impl Enigma {
         }
     }
 
-    fn run(&mut self, message: &str, key: &str) -> String {
+    pub fn run(&mut self, key: &str, message: &str) -> String {
         let key = process_key(key, &self.config.alphabet);
         let mut drums: Vec<Drum> = Vec::new();
         set_drums(&mut drums, &self.config.drum_settings, key);
 
         process_message(
-            message,
+            &message,
             &mut drums,
             &self.config.alphabet,
             &self.substitutions,
         )
     }
 
-    fn substitute(&mut self, a: char, b: char) {
+    pub fn substitute(&mut self, a: char, b: char) {
         let a_idx = self.substitutions.iter().position(|&c| c == a).unwrap();
         let b_idx = self.substitutions.iter().position(|&c| c == b).unwrap();
         let tmp = self.substitutions[a_idx];
