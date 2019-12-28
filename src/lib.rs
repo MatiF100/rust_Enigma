@@ -1,12 +1,7 @@
+use config::Config;
 use std::collections::HashMap;
-mod config;
 
-fn main() {
-    println!(
-        "Your message is now: {}",
-        enigma("Wiadomość testowa", "AAA")
-    );
-}
+mod config;
 
 mod tests {
     use super::*;
@@ -17,27 +12,82 @@ mod tests {
         let key = process_key("AAB", &config.alphabet);
         let mut drums: Vec<(Vec<char>, char, i32)> = Vec::new();
         set_drums(&mut drums, &config.drum_settings, key);
-        assert_eq!('Z', process_letter(&mut drums, &config.alphabet, 'A'));
+        assert_eq!(
+            'Z',
+            process_letter(&mut drums, &config.alphabet, &config.alphabet, 'A')
+        );
     }
 
     #[test]
     fn test_message() {
-        assert_eq!("RRBLHVGść AZGHVPF", &enigma("Wiadomość testowa", "AAA"));
+        let mut enigma = Enigma::new(Config::load_from_file("config.fesz").unwrap());
+        assert_eq!("RRBLHVGść AZGHVPF", &enigma.run("Wiadomość testowa", "AAA"));
+    }
+
+    #[test]
+    fn test_subs() {
+        let mut enigma = Enigma::new(Config::load_from_file("config.fesz").unwrap());
+        enigma.substitute('A', 'B');
+        assert_eq!("VXXI", &enigma.run("ASDF", "AAA"));
     }
 }
 
-fn enigma(message: &str, key: &str) -> String {
+type Drum = (Vec<char>, char, i32);
+
+struct Enigma {
+    config: Config,
+    substitutions: Vec<char>,
+}
+
+impl Enigma {
+    fn new(config: Config) -> Self {
+        let substitutions = config.alphabet.clone();
+
+        Enigma {
+            config,
+            substitutions,
+        }
+    }
+
+    fn run(&mut self, message: &str, key: &str) -> String {
+        let key = process_key(key, &self.config.alphabet);
+        let mut drums: Vec<Drum> = Vec::new();
+        set_drums(&mut drums, &self.config.drum_settings, key);
+
+        process_message(
+            message,
+            &mut drums,
+            &self.config.alphabet,
+            &self.substitutions,
+        )
+    }
+
+    fn substitute(&mut self, a: char, b: char) {
+        let a_idx = self.substitutions.iter().position(|&c| c == a).unwrap();
+        let b_idx = self.substitutions.iter().position(|&c| c == b).unwrap();
+        let tmp = self.substitutions[a_idx];
+        self.substitutions[a_idx] = self.substitutions[b_idx];
+        self.substitutions[b_idx] = tmp;
+    }
+}
+/*
+fn encrypt(message: &str, key: &str) -> String {
     if key.len() != 3 {
         panic!("key must be of 3 length") //TODO error handling
     }
     let config = config::Config::load_from_file("config.fesz").unwrap();
+    let substitutions = config.alphabet.clone();
+    let enigma = Enigma {
+        config,
+        substitutions,
+    };
     let key = process_key(key, &config.alphabet);
 
     let mut drums: Vec<(Vec<char>, char, i32)> = Vec::new();
     set_drums(&mut drums, &config.drum_settings, key);
 
     process_message(message, &mut drums, &config.alphabet)
-}
+}*/
 
 fn process_key(key: &str, alphabet: &Vec<char>) -> [usize; 3] {
     let mut result = [0usize; 3];
@@ -53,11 +103,12 @@ fn process_message(
     message: &str,
     drums: &mut Vec<(Vec<char>, char, i32)>,
     alphabet: &Vec<char>,
+    subs_alphabet: &Vec<char>,
 ) -> String {
     let message = message.to_ascii_uppercase();
     let encrypted = message
         .chars()
-        .map(|c| process_letter(drums, alphabet, c))
+        .map(|c| process_letter(drums, alphabet, subs_alphabet, c))
         .collect::<String>();
     encrypted
 }
@@ -65,6 +116,7 @@ fn process_message(
 fn process_letter(
     drums: &mut Vec<(Vec<char>, char, i32)>,
     alphabet: &Vec<char>,
+    subs_alphabet: &Vec<char>,
     letter: char,
 ) -> char {
     if !alphabet.contains(&letter) {
@@ -73,7 +125,7 @@ fn process_letter(
     let mut tmp = letter;
     move_drums(drums, &alphabet);
 
-    let mut idx: i32 = alphabet.iter().position(|&x| x == tmp).unwrap() as i32 - drums[2].2;
+    let mut idx: i32 = subs_alphabet.iter().position(|&x| x == tmp).unwrap() as i32 - drums[2].2;
     if idx < 0 {
         idx = alphabet.len() as i32 + idx
     }
@@ -110,9 +162,8 @@ fn process_letter(
     if idx >= alphabet.len() as i32 {
         idx = idx - alphabet.len() as i32
     }
-    tmp = alphabet[idx as usize];
+    tmp = subs_alphabet[idx as usize];
     return tmp;
-    //a i sumie jest tu naprawiony jeden błąd który mam w wersji JS :)
 }
 
 fn move_drums(drums: &mut Vec<(Vec<char>, char, i32)>, alphabet: &Vec<char>) {
@@ -144,27 +195,4 @@ fn set_drums(
     drums.push((sets[1].settings.clone(), sets[1].rot_idx, pos_set[1] as i32));
     drums.push((sets[2].settings.clone(), sets[2].rot_idx, pos_set[2] as i32));
     drums.push((sets[3].settings.clone(), sets[3].rot_idx, -1));
-
-    //czym różnią się copy i clone?
-    //copy jest dla prostych typow, ktorych kopiowanie nie jest kosztowne
-    //np i32, albo jakas tupla (i32, i32)
-    //a clone jest dla typow, które maja duzo danych, albo maja pamiec zaalokowana w roznych
-    //miejscach
-    //np. taki Vec<> ma swoj bufor zaalokowany gdzie indziej i trzeba go kopiowac, co moze byc
-    //kosztowne
-    //dlatego copy jest domyslne dla np. intow
-    //jesli uwazasz ze twoj typ jest tani do skopiowania, to mozesz mu dac #[derive(Copy, Clone)]
-    //let a = 0;
-    //let b = a;
-    //tutaj nie ma move, bo jak typ jest Copy to jest domyslnie kopiowany
-    //
-    //let a = Vec::new();
-    //let b = a;
-    //Vec nie jest Copy, wiec tutaj jest move,
-    //jest tak dlatego, zeby przy takich typach trzeba bylo 'explicit' powiedziec, ze chcesz
-    //skopiowac
-    //let b = a.clone();
-    //ok łapię
-
-    //Tu zrobić wybieranie
 }
