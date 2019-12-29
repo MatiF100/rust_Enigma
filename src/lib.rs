@@ -1,10 +1,9 @@
 use config::Config;
-use std::collections::HashMap;
 
 pub mod config;
 
 mod tests {
-    use super::*;
+	use super::*;
     #[test]
     fn test_process_letter() {
         let config = config::Config::load_from_file("config.fesz").unwrap();
@@ -21,14 +20,14 @@ mod tests {
     #[test]
     fn test_message() {
         let mut enigma = Enigma::new(Config::load_from_file("config.fesz").unwrap());
-        assert_eq!("RRBLHVGść AZGHVPF", &enigma.run("Wiadomość testowa", "AAA"));
+        assert_eq!("RRBLHVGść AZGHVPF", &enigma.run("AAA", "Wiadomość testowa"));
     }
 
     #[test]
     fn test_subs() {
         let mut enigma = Enigma::new(Config::load_from_file("config.fesz").unwrap());
         enigma.substitute('A', 'B');
-        assert_eq!("VXXI", &enigma.run("ASDF", "AAA"));
+        assert_eq!("VXXI", &enigma.run("AAA", "ASDF"));
     }
 }
 
