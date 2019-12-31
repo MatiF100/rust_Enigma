@@ -12,7 +12,7 @@ let app = new Vue({
 	},
 	methods: {
 		encrypt: function(event) {
-			this.encrypted_msg = enigma.run(this.key, this.msg);
+			this.encrypted_msg = enigma.run(this.key, this.msg, [0, 1, 2, 3]);
 		},
 	},
 });

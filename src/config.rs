@@ -10,7 +10,7 @@ pub struct Config {
     pub drum_settings: Vec<DrumSetting>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DrumSetting {
     pub name: String,
     pub settings: Vec<char>,
