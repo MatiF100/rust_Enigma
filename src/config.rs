@@ -25,12 +25,12 @@ enum ParserMode {
 
 impl Config {
     pub fn load_from_file<P: AsRef<Path>>(path: P) -> io::Result<Self> {
-		let f = File::open(path)?;
-		Self::load_from_buf(f)
-	}
+        let f = File::open(path)?;
+        Self::load_from_buf(f)
+    }
 
-	pub fn load_from_buf<R: io::Read>(r: R) -> io::Result<Self> {
-		let buf = BufReader::new(r);
+    pub fn load_from_buf<R: io::Read>(r: R) -> io::Result<Self> {
+        let buf = BufReader::new(r);
 
         let mut config = Config {
             alphabet: Vec::new(),

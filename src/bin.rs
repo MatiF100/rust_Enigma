@@ -48,7 +48,7 @@ fn main() -> io::Result<()> {
     io::stdout().flush()?;
     io::stdin().read_line(&mut message)?;
 
-    let output = enigma.run(key.trim(), message.trim(), [right, mid, left, reverse]);
+    let output = enigma.run(key.trim(), message.trim(), &[right, mid, left, reverse]);
     println!("Output: {}", output);
 
     Ok(())

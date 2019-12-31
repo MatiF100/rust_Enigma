@@ -9,7 +9,7 @@ mod wasm_utils;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 mod tests {
-	use super::*;
+    use super::*;
     #[test]
     fn test_process_letter() {
         let config = config::Config::load_from_file("config.fesz").unwrap();
@@ -52,7 +52,7 @@ pub struct Enigma {
 
 #[cfg(not(target_arch = "wasm32"))]
 impl Enigma {
-	pub fn new(config: Config) -> Self {
+    pub fn new(config: Config) -> Self {
         let substitutions = config.alphabet.clone();
         let selections = Vec::new();
 
@@ -81,17 +81,17 @@ impl Enigma {
 
 #[wasm_bindgen]
 impl Enigma {
-	#[cfg(target_arch = "wasm32")]
-	pub fn new() -> Self {
-		let config = Config::load_from_buf(include_str!("../config.fesz").as_bytes()).unwrap();
-		let substitutions = config.alphabet.clone();
+    #[cfg(target_arch = "wasm32")]
+    pub fn new() -> Self {
+        let config = Config::load_from_buf(include_str!("../config.fesz").as_bytes()).unwrap();
+        let substitutions = config.alphabet.clone();
 
         Enigma {
             config,
             substitutions,
-			selections: Vec::new(),
+            selections: Vec::new(),
         }
-	}
+    }
 
     pub fn run(&mut self, key: &str, message: &str, idxes: &[usize]) -> String {
         let key = process_key(key, &self.config.alphabet);
@@ -134,10 +134,7 @@ fn encrypt(message: &str, key: &str) -> String {
     process_message(message, &mut drums, &config.alphabet)
 }*/
 
-fn choose_drums(
-    options: &Vec<config::DrumSetting>,
-    selects: &[usize],
-) -> Vec<config::DrumSetting> {
+fn choose_drums(options: &Vec<config::DrumSetting>, selects: &[usize]) -> Vec<config::DrumSetting> {
     let mut tmp: Vec<config::DrumSetting> = Vec::new();
     for n in 0..4 {
         tmp.push(options[selects[n]].clone());
@@ -149,6 +146,7 @@ fn process_key(key: &str, alphabet: &Vec<char>) -> [usize; 3] {
     let mut result = [0usize; 3];
     key.chars()
         .take(3)
+        .map(|c| c.to_ascii_uppercase())
         .map(|c| alphabet.iter().position(|&x| x == c).unwrap())
         .enumerate()
         .for_each(|(idx, el)| result[idx] = el);
