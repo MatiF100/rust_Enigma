@@ -1,5 +1,4 @@
 use config::Config;
-use std::collections::HashMap;
 
 pub mod config;
 
@@ -21,14 +20,17 @@ mod tests {
     #[test]
     fn test_message() {
         let mut enigma = Enigma::new(Config::load_from_file("config.fesz").unwrap());
-        assert_eq!("RRBLHVGść AZGHVPF", &enigma.run("Wiadomość testowa", "AAA"));
+        assert_eq!(
+            "RRBLHVGść AZGHVPF",
+            &enigma.run("AAA", "Wiadomość testowa", [0, 1, 2, 3])
+        );
     }
 
     #[test]
     fn test_subs() {
         let mut enigma = Enigma::new(Config::load_from_file("config.fesz").unwrap());
         enigma.substitute('A', 'B');
-        assert_eq!("VXXI", &enigma.run("ASDF", "AAA"));
+        assert_eq!("VXXI", &enigma.run("AAA", "ASDF", [0, 1, 2, 3]));
     }
 }
 
@@ -38,22 +40,26 @@ type Drum = (Vec<char>, char, i32);
 pub struct Enigma {
     config: Config,
     substitutions: Vec<char>,
+    selections: Vec<(Vec<char>, char, i32)>,
 }
 
 impl Enigma {
     pub fn new(config: Config) -> Self {
         let substitutions = config.alphabet.clone();
+        let selections = Vec::new();
 
         Enigma {
             config,
             substitutions,
+            selections,
         }
     }
 
-    pub fn run(&mut self, key: &str, message: &str) -> String {
+    pub fn run(&mut self, key: &str, message: &str, idxes: [usize; 4]) -> String {
         let key = process_key(key, &self.config.alphabet);
         let mut drums: Vec<Drum> = Vec::new();
-        set_drums(&mut drums, &self.config.drum_settings, key);
+        let drum_settings = choose_drums(&self.config.drum_settings, idxes);
+        set_drums(&mut drums, &drum_settings, key);
 
         process_message(
             &message,
@@ -69,6 +75,21 @@ impl Enigma {
         let tmp = self.substitutions[a_idx];
         self.substitutions[a_idx] = self.substitutions[b_idx];
         self.substitutions[b_idx] = tmp;
+    }
+
+    pub fn aod<'a>(&'a self) -> [Vec<(usize, &'a str)>; 2] {
+        let drums = &self.config.drum_settings;
+        let mut dr: Vec<(usize, &str)> = Vec::new();
+        let mut rv: Vec<(usize, &str)> = Vec::new();
+
+        for (idx, drum) in drums.iter().enumerate() {
+            if drum.rot_idx != ' ' {
+                dr.push((idx, &drum.name));
+            } else {
+                rv.push((idx, &drum.name));
+            }
+        }
+        [dr, rv]
     }
 }
 /*
@@ -89,6 +110,17 @@ fn encrypt(message: &str, key: &str) -> String {
 
     process_message(message, &mut drums, &config.alphabet)
 }*/
+
+fn choose_drums(
+    options: &Vec<config::DrumSetting>,
+    selects: [usize; 4],
+) -> Vec<config::DrumSetting> {
+    let mut tmp: Vec<config::DrumSetting> = Vec::new();
+    for n in 0..4 {
+        tmp.push(options[selects[n]].clone());
+    }
+    tmp
+}
 
 fn process_key(key: &str, alphabet: &Vec<char>) -> [usize; 3] {
     let mut result = [0usize; 3];
