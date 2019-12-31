@@ -1,6 +1,12 @@
 use config::Config;
+use wasm_bindgen::prelude::*;
 
 pub mod config;
+mod wasm_utils;
+
+#[cfg(feature = "wee_alloc")]
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 mod tests {
 	use super::*;
@@ -33,14 +39,16 @@ mod tests {
 
 type Drum = (Vec<char>, char, i32);
 
+#[wasm_bindgen]
 #[derive(Debug)]
 pub struct Enigma {
     config: Config,
     substitutions: Vec<char>,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl Enigma {
-    pub fn new(config: Config) -> Self {
+	pub fn new(config: Config) -> Self {
         let substitutions = config.alphabet.clone();
 
         Enigma {
@@ -48,6 +56,20 @@ impl Enigma {
             substitutions,
         }
     }
+}
+
+#[wasm_bindgen]
+impl Enigma {
+	#[cfg(target_arch = "wasm32")]
+	pub fn new() -> Self {
+		let config = Config::load_from_buf(include_str!("../config.fesz").as_bytes()).unwrap();
+		let substitutions = config.alphabet.clone();
+
+        Enigma {
+            config,
+            substitutions,
+        }
+	}
 
     pub fn run(&mut self, key: &str, message: &str) -> String {
         let key = process_key(key, &self.config.alphabet);
