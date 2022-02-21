@@ -26,7 +26,7 @@ mod tests {
         let mut enigma = Enigma::new(Config::load_from_file("config.fesz").unwrap());
         assert_eq!(
             "RRBLHVGść AZGHVPF",
-            &enigma.run("AAA", "Wiadomość testowa", [0, 1, 2, 3])
+            &enigma.run("AAA", "Wiadomość testowa", &[0, 1, 2, 3])
         );
     }
 
@@ -34,7 +34,7 @@ mod tests {
     fn test_subs() {
         let mut enigma = Enigma::new(Config::load_from_file("config.fesz").unwrap());
         enigma.substitute('A', 'B');
-        assert_eq!("VXXI", &enigma.run("AAA", "ASDF", [0, 1, 2, 3]));
+        assert_eq!("VXXI", &enigma.run("AAA", "ASDF", &[0, 1, 2, 3]));
     }
 }
 
