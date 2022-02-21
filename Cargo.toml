@@ -11,7 +11,7 @@ license = "MIT"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-name = "rust_enigma"
+name = "binary_enigma"
 path = "src/bin.rs"
 
 
