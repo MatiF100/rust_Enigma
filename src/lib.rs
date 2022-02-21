@@ -1,8 +1,6 @@
 use config::Config;
-use wasm_bindgen::prelude::*;
 
 pub mod config;
-mod wasm_utils;
 
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
@@ -42,7 +40,6 @@ mod tests {
 
 type Drum = (Vec<char>, char, i32);
 
-#[wasm_bindgen]
 #[derive(Debug)]
 pub struct Enigma {
     config: Config,
@@ -79,7 +76,6 @@ impl Enigma {
     }
 }
 
-#[wasm_bindgen]
 impl Enigma {
     #[cfg(target_arch = "wasm32")]
     pub fn new() -> Self {
